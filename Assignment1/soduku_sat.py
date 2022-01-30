@@ -1,7 +1,8 @@
 from pprint import pprint
 import sys
-from pysat.formula import CNF
+from pysat.formula import CNFPlus
 from pysat.solvers import Solver
+from pysat.card import CardEnc, EncType
 import csv
 
 k = 3
@@ -69,52 +70,89 @@ def main():
     # Read the file
     sudoku1, sudoku2 = read_file(file_path)
 
-    cnf = CNF()
+    cnf = CNFPlus()
 
-    # add clauses for each cell has atleast one value
+    # # add clauses for each cell has atleast one value
+    # for i in range(n):
+    #     for j in range(n):
+    #         cnf.append([hash_fn(0, i, j, t) for t in range(1, n+1)])
+    #         cnf.append([hash_fn(1, i, j, t) for t in range(1, n+1)])
+
+    # # add clauses for each cell has atmost one value
+    # for i in range(n):
+    #     for j in range(n):
+    #         for t1 in range(1, n+1):
+    #             for t2 in range(t1+1, n+1):
+    #                 cnf.append([-hash_fn(0, i, j, t1), -hash_fn(0, i, j, t2)])
+    #                 cnf.append([-hash_fn(1, i, j, t1), -hash_fn(1, i, j, t2)])
+
     for i in range(n):
         for j in range(n):
-            cnf.append([hash_fn(0, i, j, t) for t in range(1, n+1)])
-            cnf.append([hash_fn(1, i, j, t) for t in range(1, n+1)])
-
-    # add clauses for each cell has atmost one value
-    for i in range(n):
-        for j in range(n):
-            for t1 in range(1, n+1):
-                for t2 in range(t1+1, n+1):
-                    cnf.append([-hash_fn(0, i, j, t1), -hash_fn(0, i, j, t2)])
-                    cnf.append([-hash_fn(1, i, j, t1), -hash_fn(1, i, j, t2)])
+            lst1 = []
+            lst2 = []
+            for t in range(1, n+1):
+                lst1.append(hash_fn(0, i, j, t))
+                lst2.append(hash_fn(1, i, j, t))
+            cnf.extend(CardEnc.equals(
+                lits=lst1, bound=1, encoding=EncType.pairwise))
+            cnf.extend(CardEnc.equals(
+                lits=lst2, bound=1, encoding=EncType.pairwise))
 
     # add clauses for each row has all values
     for i in range(n):
         for t in range(1, n+1):
-            cnf.append([hash_fn(0, i, j, t) for j in range(n)])
-            cnf.append([hash_fn(1, i, j, t) for j in range(n)])
+            lst1 = []
+            lst2 = []
+            for j in range(n):
+                lst1.append(hash_fn(0, i, j, t))
+                lst2.append(hash_fn(1, i, j, t))
+            cnf.extend(CardEnc.equals(
+                lits=lst1, bound=1, encoding=EncType.pairwise))
+            cnf.extend(CardEnc.equals(
+                lits=lst2, bound=1, encoding=EncType.pairwise))
 
-    # add clauses for each column has all values
     for j in range(n):
         for t in range(1, n+1):
-            cnf.append([hash_fn(0, i, j, t) for i in range(n)])
-            cnf.append([hash_fn(1, i, j, t) for i in range(n)])
+            lst1 = []
+            lst2 = []
+            for i in range(n):
+                lst1.append(hash_fn(0, i, j, t))
+                lst2.append(hash_fn(1, i, j, t))
+            cnf.extend(CardEnc.equals(
+                lits=lst1, bound=1, encoding=EncType.pairwise))
+            cnf.extend(CardEnc.equals(
+                lits=lst2, bound=1, encoding=EncType.pairwise))
+
+    # # add clauses for each column has all values
+    # for j in range(n):
+    #     for t in range(1, n+1):
+    #         cnf.append([hash_fn(0, i, j, t) for i in range(n)])
+    #         cnf.append([hash_fn(1, i, j, t) for i in range(n)])
 
     # add clauses for each subgrid has all values
     for i in range(0, n, k):
         for j in range(0, n, k):
-            for t in range(1, n+1):
-                cnf.append([hash_fn(0, i+x, j+y, t)
-                            for x in range(k) for y in range(k)])
-                cnf.append([hash_fn(1, i+x, j+y, t)
-                            for x in range(k) for y in range(k)])
+            for l in range(k):
+                for m in range(k):
+                    lst1 = []
+                    lst2 = []
+                    for t in range(1, n+1):
+                        lst1.append(hash_fn(0, i+l, j+m, t))
+                        lst2.append(hash_fn(1, i+l, j+m, t))
+                    cnf.extend(CardEnc.equals(
+                        lits=lst1, bound=1, encoding=EncType.pairwise))
+                    cnf.extend(CardEnc.equals(
+                        lits=lst2, bound=1, encoding=EncType.pairwise))
 
     # add clauses for pair suduko
     for i in range(n):
         for j in range(n):
-            if sudoku1[i][j] == 0:
-                for t in range(1, n+1):
-                    cnf.append([-hash_fn(0, i, j, t), -hash_fn(1, i, j, t)])
-            elif sudoku2[i][j] == 0:
-                for t in range(1, n+1):
-                    cnf.append([-hash_fn(0, i, j, t), -hash_fn(1, i, j, t)])
+            for t in range(1, n+1):
+            lst = []
+            lst.append(hash_fn(0, i, j, t))
+            lst.append(hash_fn(1, i, j, t))
+            cnf.extend(CardEnc.atmost(
+                lits=lst, bound=1, encoding=EncType.pairwise))
 
     # Assumptions, form the existing sudokus
     assumptions = []
