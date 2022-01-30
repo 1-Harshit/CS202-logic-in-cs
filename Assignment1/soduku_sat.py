@@ -5,7 +5,6 @@ from pysat.solvers import Solver
 from pysat.card import CardEnc, EncType
 import csv
 
-k = 3
 
 """
 	maps (i,j,t) to a unique integer
@@ -14,12 +13,12 @@ k = 3
 """
 
 
-def hash_fn(index: int, i: int, j: int, t: int) -> int:
+def hash_fn(k, index, i, j, t):
     ksq = k**2 + 1
     return index*(ksq**3) + i*(ksq**2) + j*ksq + t
 
 
-def rev_hash_fn(hash_value: int) -> tuple[int, int, int, int]:
+def rev_hash_fn(k, hash_value):
     ksq = k**2 + 1
     index = hash_value // (ksq**3)
     hash_value = hash_value % (ksq**3)
@@ -30,12 +29,12 @@ def rev_hash_fn(hash_value: int) -> tuple[int, int, int, int]:
     return index, i, j, t
 
 
-def read_file(filepath: str) -> tuple[list, list]:
+def read_file(k, filepath):
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         grid = list(reader)
         grid = [list(map(int, row)) for row in grid]
-        return grid[:9], grid[9:]
+        return grid[:k*k], grid[k*k:]
 
 
 """
@@ -63,36 +62,42 @@ def get_options() -> tuple[int, str]:
 
 
 def main():
-    global k
     k, file_path = get_options()
     n = k*k
 
     # Read the file
-    sudoku1, sudoku2 = read_file(file_path)
+    sudoku1, sudoku2 = read_file(k, file_path)
 
+    solved, time = pair_solver(k, n, sudoku1, sudoku2)
+
+    sat_to_sudoku(k, n, solved)
+    print("Time: ", time)
+
+
+def sat_to_sudoku(k, n, solved):
+    if solved is not None:
+        res = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]
+        for x in solved:
+            if x > 0:
+                index, i, j, t = rev_hash_fn(k, x)
+                res[index][i][j] = t
+        pprint(res[0])
+        pprint(res[1])
+    else:
+        print("No Solution")
+
+
+def pair_solver(k, n, sudoku1, sudoku2):
     cnf = CNFPlus()
 
-    # # add clauses for each cell has atleast one value
-    # for i in range(n):
-    #     for j in range(n):
-    #         cnf.append([hash_fn(0, i, j, t) for t in range(1, n+1)])
-    #         cnf.append([hash_fn(1, i, j, t) for t in range(1, n+1)])
-
-    # # add clauses for each cell has atmost one value
-    # for i in range(n):
-    #     for j in range(n):
-    #         for t1 in range(1, n+1):
-    #             for t2 in range(t1+1, n+1):
-    #                 cnf.append([-hash_fn(0, i, j, t1), -hash_fn(0, i, j, t2)])
-    #                 cnf.append([-hash_fn(1, i, j, t1), -hash_fn(1, i, j, t2)])
-
+    # # add clauses for each cell has exactly one value
     for i in range(n):
         for j in range(n):
             lst1 = []
             lst2 = []
             for t in range(1, n+1):
-                lst1.append(hash_fn(0, i, j, t))
-                lst2.append(hash_fn(1, i, j, t))
+                lst1.append(hash_fn(k, 0, i, j, t))
+                lst2.append(hash_fn(k, 1, i, j, t))
             cnf.extend(CardEnc.equals(
                 lits=lst1, bound=1, encoding=EncType.pairwise))
             cnf.extend(CardEnc.equals(
@@ -104,30 +109,25 @@ def main():
             lst1 = []
             lst2 = []
             for j in range(n):
-                lst1.append(hash_fn(0, i, j, t))
-                lst2.append(hash_fn(1, i, j, t))
+                lst1.append(hash_fn(k, 0, i, j, t))
+                lst2.append(hash_fn(k, 1, i, j, t))
             cnf.extend(CardEnc.equals(
                 lits=lst1, bound=1, encoding=EncType.pairwise))
             cnf.extend(CardEnc.equals(
                 lits=lst2, bound=1, encoding=EncType.pairwise))
 
+    # add clauses for each column has all values
     for j in range(n):
         for t in range(1, n+1):
             lst1 = []
             lst2 = []
             for i in range(n):
-                lst1.append(hash_fn(0, i, j, t))
-                lst2.append(hash_fn(1, i, j, t))
+                lst1.append(hash_fn(k, 0, i, j, t))
+                lst2.append(hash_fn(k, 1, i, j, t))
             cnf.extend(CardEnc.equals(
                 lits=lst1, bound=1, encoding=EncType.pairwise))
             cnf.extend(CardEnc.equals(
                 lits=lst2, bound=1, encoding=EncType.pairwise))
-
-    # # add clauses for each column has all values
-    # for j in range(n):
-    #     for t in range(1, n+1):
-    #         cnf.append([hash_fn(0, i, j, t) for i in range(n)])
-    #         cnf.append([hash_fn(1, i, j, t) for i in range(n)])
 
     # add clauses for each subgrid has all values
     for i in range(0, n, k):
@@ -137,8 +137,8 @@ def main():
                     lst1 = []
                     lst2 = []
                     for t in range(1, n+1):
-                        lst1.append(hash_fn(0, i+l, j+m, t))
-                        lst2.append(hash_fn(1, i+l, j+m, t))
+                        lst1.append(hash_fn(k, 0, i+l, j+m, t))
+                        lst2.append(hash_fn(k, 1, i+l, j+m, t))
                     cnf.extend(CardEnc.equals(
                         lits=lst1, bound=1, encoding=EncType.pairwise))
                     cnf.extend(CardEnc.equals(
@@ -147,12 +147,13 @@ def main():
     # add clauses for pair suduko
     for i in range(n):
         for j in range(n):
-            for t in range(1, n+1):
-            lst = []
-            lst.append(hash_fn(0, i, j, t))
-            lst.append(hash_fn(1, i, j, t))
-            cnf.extend(CardEnc.atmost(
-                lits=lst, bound=1, encoding=EncType.pairwise))
+            if(sudoku1[i][j] == 0 or sudoku2[i][j] == 0):
+                for t in range(1, n+1):
+                    lst = []
+                    lst.append(hash_fn(k, 0, i, j, t))
+                    lst.append(hash_fn(k, 1, i, j, t))
+                cnf.extend(CardEnc.atmost(
+                    lits=lst, bound=1, encoding=EncType.pairwise))
 
     # Assumptions, form the existing sudokus
     assumptions = []
@@ -161,32 +162,21 @@ def main():
             if sudoku1[i][j] != 0:
                 for t in range(1, n+1):
                     if sudoku1[i][j] == t:
-                        assumptions.append(hash_fn(0, i, j, t))
+                        assumptions.append(hash_fn(k, 0, i, j, t))
                     else:
-                        assumptions.append(-hash_fn(0, i, j, t))
+                        assumptions.append(-hash_fn(k, 0, i, j, t))
             if sudoku2[i][j] != 0:
                 for t in range(1, n+1):
                     if sudoku2[i][j] == t:
-                        assumptions.append(hash_fn(1, i, j, t))
+                        assumptions.append(hash_fn(k, 1, i, j, t))
                     else:
-                        assumptions.append(-hash_fn(1, i, j, t))
+                        assumptions.append(-hash_fn(k, 1, i, j, t))
 
     # Solve the sudoku
-    solve = Solver()
+    solve = Solver(use_timer=True)
     solve.append_formula(cnf.clauses)
-    solved = solve.solve(assumptions=assumptions)
-
-    if solved:
-        model = solve.get_model()
-        res = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]
-        for x in model:
-            if x > 0:
-                index, i, j, t = rev_hash_fn(x)
-                res[index][i][j] = t
-        pprint(res[0])
-        pprint(res[1])
-    else:
-        print("No Solution")
+    solve.solve(assumptions=assumptions)
+    return solve.get_model(), solve.time_accum()
 
 
 if __name__ == '__main__':
