@@ -42,7 +42,7 @@ def read_file(k, filepath):
 """
 
 
-def get_options() -> tuple[int, str]:
+def get_options():
     options = sys.argv
     if len(options) != 3:
         print("Usage: python3 soduku_sat.py <k> <file_path>")
@@ -71,7 +71,7 @@ def main():
     solved, time = pair_solver(k, n, sudoku1, sudoku2)
 
     sat_to_sudoku(k, n, solved)
-    print("Time: ", time)
+    print("Time: ", time*60)
 
 
 def sat_to_sudoku(k, n, solved):
