@@ -86,6 +86,7 @@ def sat_to_sudoku(k, solved):
         pprint(res[1])
     else:
         print("No Solution")
+    return res
 
 
 def pair_solver(k, sudoku1, sudoku2):
