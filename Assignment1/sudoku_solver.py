@@ -68,6 +68,9 @@ def main():
     # Read the file
     sudoku1, sudoku2 = read_file(k, file_path)
 
+    pprint(sudoku1)
+    pprint(sudoku2)
+    
     solved, time = pair_solver(k, sudoku1, sudoku2)
 
     sat_to_sudoku(k, solved)
@@ -75,6 +78,7 @@ def main():
 
 
 def sat_to_sudoku(k, solved):
+    res = []
     n= k*k
     if solved is not None:
         res = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]
@@ -82,8 +86,8 @@ def sat_to_sudoku(k, solved):
             if x > 0:
                 index, i, j, t = rev_hash_fn(k, x)
                 res[index][i][j] = t
-        pprint(res[0])
-        pprint(res[1])
+        # pprint(res[0])
+        # pprint(res[1])
     else:
         print("No Solution")
     return res
