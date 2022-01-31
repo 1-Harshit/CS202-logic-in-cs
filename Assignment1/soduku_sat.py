@@ -71,7 +71,7 @@ def main():
     solved, time = pair_solver(k, n, sudoku1, sudoku2)
 
     sat_to_sudoku(k, n, solved)
-    print("Time: ", time*60)
+    print("Time: {}ms ".format(int(time*1000)))
 
 
 def sat_to_sudoku(k, n, solved):
