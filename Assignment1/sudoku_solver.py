@@ -42,7 +42,7 @@ def read_file(k, filepath):
 """
 
 
-def get_options():
+def get_options() -> tuple[int, str]:
     options = sys.argv
     if len(options) != 3:
         print("Usage: python3 soduku_sat.py <k> <file_path>")
@@ -68,13 +68,14 @@ def main():
     # Read the file
     sudoku1, sudoku2 = read_file(k, file_path)
 
-    solved, time = pair_solver(k, n, sudoku1, sudoku2)
+    solved, time = pair_solver(k, sudoku1, sudoku2)
 
-    sat_to_sudoku(k, n, solved)
-    print("Time: {}ms ".format(int(time*1000)))
+    sat_to_sudoku(k, solved)
+    print("Time: ", time)
 
 
-def sat_to_sudoku(k, n, solved):
+def sat_to_sudoku(k, solved):
+    n= k*k
     if solved is not None:
         res = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]
         for x in solved:
@@ -87,7 +88,54 @@ def sat_to_sudoku(k, n, solved):
         print("No Solution")
 
 
-def pair_solver(k, n, sudoku1, sudoku2):
+def pair_solver(k, sudoku1, sudoku2):
+    n =k*k
+    cnf = sudoku_cnf(k)
+
+    # add clauses for pair suduko
+    for i in range(n):
+        for j in range(n):
+            if(sudoku1[i][j] == 0 or sudoku2[i][j] == 0):
+                for t in range(1, n+1):
+                    lst = []
+                    lst.append(hash_fn(k, 0, i, j, t))
+                    lst.append(hash_fn(k, 1, i, j, t))
+                    cnf.extend(CardEnc.atmost(
+                        lits=lst, bound=1, encoding=EncType.pairwise))
+
+
+    solve = Solver(use_timer=True)
+    solve.append_formula(cnf.clauses)
+    
+    
+    return solve_sudoku(k, sudoku1, sudoku2, solve)
+
+def solve_sudoku(k, sudoku1, sudoku2, solver):
+    n = k*k
+
+    # Assumptions, form the existing sudokus
+    assumptions = []
+    for i in range(n):
+        for j in range(n):
+            if sudoku1[i][j] != 0:
+                for t in range(1, n+1):
+                    if sudoku1[i][j] == t:
+                        assumptions.append(hash_fn(k, 0, i, j, t))
+                    else:
+                        assumptions.append(-hash_fn(k, 0, i, j, t))
+            if sudoku2[i][j] != 0:
+                for t in range(1, n+1):
+                    if sudoku2[i][j] == t:
+                        assumptions.append(hash_fn(k, 1, i, j, t))
+                    else:
+                        assumptions.append(-hash_fn(k, 1, i, j, t))
+
+    # Solve the sudoku
+    solver.solve(assumptions=assumptions)
+    return solver.get_model(), solver.time_accum()
+
+def sudoku_cnf(k):
+    n=k*k
     cnf = CNFPlus()
 
     # # add clauses for each cell has exactly one value
@@ -132,51 +180,19 @@ def pair_solver(k, n, sudoku1, sudoku2):
     # add clauses for each subgrid has all values
     for i in range(0, n, k):
         for j in range(0, n, k):
-            for l in range(k):
-                for m in range(k):
-                    lst1 = []
-                    lst2 = []
-                    for t in range(1, n+1):
+            for t in range(1, n+1):
+                lst1 = []
+                lst2 = []
+                for l in range(k):
+                    for m in range(k):
                         lst1.append(hash_fn(k, 0, i+l, j+m, t))
                         lst2.append(hash_fn(k, 1, i+l, j+m, t))
-                    cnf.extend(CardEnc.equals(
-                        lits=lst1, bound=1, encoding=EncType.pairwise))
-                    cnf.extend(CardEnc.equals(
-                        lits=lst2, bound=1, encoding=EncType.pairwise))
-
-    # add clauses for pair suduko
-    for i in range(n):
-        for j in range(n):
-            if(sudoku1[i][j] == 0 or sudoku2[i][j] == 0):
-                for t in range(1, n+1):
-                    lst = []
-                    lst.append(hash_fn(k, 0, i, j, t))
-                    lst.append(hash_fn(k, 1, i, j, t))
-                cnf.extend(CardEnc.atmost(
-                    lits=lst, bound=1, encoding=EncType.pairwise))
-
-    # Assumptions, form the existing sudokus
-    assumptions = []
-    for i in range(n):
-        for j in range(n):
-            if sudoku1[i][j] != 0:
-                for t in range(1, n+1):
-                    if sudoku1[i][j] == t:
-                        assumptions.append(hash_fn(k, 0, i, j, t))
-                    else:
-                        assumptions.append(-hash_fn(k, 0, i, j, t))
-            if sudoku2[i][j] != 0:
-                for t in range(1, n+1):
-                    if sudoku2[i][j] == t:
-                        assumptions.append(hash_fn(k, 1, i, j, t))
-                    else:
-                        assumptions.append(-hash_fn(k, 1, i, j, t))
-
-    # Solve the sudoku
-    solve = Solver(use_timer=True)
-    solve.append_formula(cnf.clauses)
-    solve.solve(assumptions=assumptions)
-    return solve.get_model(), solve.time_accum()
+                cnf.extend(CardEnc.equals(
+                    lits=lst1, bound=1, encoding=EncType.pairwise))
+                cnf.extend(CardEnc.equals(
+                    lits=lst2, bound=1, encoding=EncType.pairwise))
+                        
+    return cnf
 
 
 if __name__ == '__main__':
