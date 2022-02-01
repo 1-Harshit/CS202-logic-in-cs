@@ -13,9 +13,7 @@ def pair_solver(k, sudoku1, sudoku2):
         for j in range(n):
             if sudoku1[i][j] == 0 or sudoku2[i][j] == 0:
                 for t in range(1, n + 1):
-                    lst = []
-                    lst.append(hash_fn(k, 0, i, j, t))
-                    lst.append(hash_fn(k, 1, i, j, t))
+                    lst = [hash_fn(k, 0, i, j, t), hash_fn(k, 1, i, j, t)]
                     cnf.extend(
                         CardEnc.atmost(lits=lst, bound=1, encoding=EncType.pairwise)
                     )

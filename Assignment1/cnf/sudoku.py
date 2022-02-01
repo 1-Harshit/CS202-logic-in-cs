@@ -70,9 +70,7 @@ def get_pair_cnf(k, sudoku):
         for j in range(n):
             if sudoku[i][j] == 0:
                 for t in range(1, n + 1):
-                    lst = []
-                    lst.append(hash_fn(k, 0, i, j, t))
-                    lst.append(hash_fn(k, 1, i, j, t))
+                    lst = [hash_fn(k, 0, i, j, t), hash_fn(k, 1, i, j, t)]
                     cnf.extend(
                         CardEnc.atmost(lits=lst, bound=1, encoding=EncType.pairwise)
                     )

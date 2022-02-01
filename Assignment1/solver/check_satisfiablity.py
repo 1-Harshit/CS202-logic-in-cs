@@ -4,7 +4,7 @@ from pysat.solvers import Solver
 
 def check_satisfiablity(k, sudoku1, cnf1, cnf2):
     n = k * k
-    solver = Solver(use_timer=True)
+    solver = Solver()
     solver.append_formula(cnf1.clauses)
     solver.append_formula(cnf2.clauses)
 
@@ -21,4 +21,4 @@ def check_satisfiablity(k, sudoku1, cnf1, cnf2):
                         assumptions.append(-hash_fn(k, 0, i, j, t))
                         assumptions.append(-hash_fn(k, 1, i, j, t))
 
-    return solver.solve(assumptions=assumptions), solver.time_accum()
+    return bool(solver.solve(assumptions=assumptions))
