@@ -5,6 +5,7 @@ __pycache__/
 
 # output files
 *output.csv
+*output.csv.key
 sample.csv.key
 
 # C extensions
