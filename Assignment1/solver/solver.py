@@ -1,3 +1,4 @@
+from pprint import pprint
 from cnf import sudoku_cnf
 from util import hash_fn, sat_to_sudoku
 from pysat.solvers import Solver
@@ -17,10 +18,8 @@ def pair_solver(k, sudoku1, sudoku2):
                     cnf.extend(
                         CardEnc.atmost(lits=lst, bound=1, encoding=EncType.pairwise)
                     )
-
     solve = Solver(use_timer=True)
     solve.append_formula(cnf.clauses)
-
     return sudoku_solver(k, sudoku1, sudoku2, solve)
 
 
@@ -31,19 +30,23 @@ def sudoku_solver(k, sudoku1, sudoku2, solver):
     assumptions = []
     for i in range(n):
         for j in range(n):
-            if sudoku1[i][j] != 0:
+            if sudoku1[i][j] != 0 and sudoku2[i][j] == 0:
                 for t in range(1, n + 1):
                     if sudoku1[i][j] == t:
                         assumptions.append(hash_fn(k, 0, i, j, t))
-                    else:
-                        assumptions.append(-hash_fn(k, 0, i, j, t))
-            if sudoku2[i][j] != 0:
+            if sudoku1[i][j] == 0 and sudoku2[i][j] != 0:
                 for t in range(1, n + 1):
                     if sudoku2[i][j] == t:
                         assumptions.append(hash_fn(k, 1, i, j, t))
-                    else:
-                        assumptions.append(-hash_fn(k, 1, i, j, t))
-
+            if sudoku1[i][j] != 0 and sudoku2[i][j] != 0:
+                if sudoku1[i][j] == sudoku2[i][j]:
+                    exit(1)
+                else:
+                    assumptions.append(hash_fn(k, 0, i, j, sudoku1[i][j]))
+                    assumptions.append(hash_fn(k, 1, i, j, sudoku2[i][j]))
     # Solve the sudoku
-    solver.solve(assumptions=assumptions)
+
+    x = solver.solve(assumptions=assumptions)
+    if not x:
+        pprint(solver.get_core())
     return solver.get_model(), solver.time_accum()

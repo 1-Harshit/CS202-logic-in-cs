@@ -13,13 +13,12 @@ def solver_main():
     # Read the file
     sudoku1, sudoku2 = read_file(k, file_path)
 
-    pprint(sudoku1)
-    pprint(sudoku2)
-
     solved, time = pair_solver(k, sudoku1, sudoku2)
 
     res = sat_to_sudoku(k, solved)
+
     pprint(res)
+
     print("Time: ", time)
 
 
