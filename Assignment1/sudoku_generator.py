@@ -8,12 +8,10 @@ import random
 
 def generator_main():
     k = get_generator_options()
-    n = k * k
-    cnf = sudoku_cnf(k)
-    grid = get_random_grid(n)
-    grid = get_filled_sudoku(k, cnf, grid)
+    grid = get_random_grid(k * k)
+    grid = get_filled_sudoku(k, grid)
     pprint(grid)
-    x = generate_sudoku(k, n, cnf, grid)
+    x = generate_sudoku(k, grid)
 
     pprint(x)
 

@@ -61,14 +61,14 @@ def sudoku_cnf(k):
     return cnf
 
 
-def get_pair_cnf(k, sudoku):
+def get_pair_cnf(k, sudoku1, sudoku2):
     n = k * k
-    cnf = CNFPlus()
+    cnf = sudoku_cnf(k)
 
     # add clauses for pair suduko
     for i in range(n):
         for j in range(n):
-            if sudoku[i][j] == 0:
+            if sudoku1[i][j] == 0 or sudoku2[i][j] == 0:
                 for t in range(1, n + 1):
                     lst = [hash_fn(k, 0, i, j, t), hash_fn(k, 1, i, j, t)]
                     cnf.extend(

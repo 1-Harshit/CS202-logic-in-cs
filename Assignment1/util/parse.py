@@ -20,13 +20,16 @@ def sat_to_sudoku(k, solved):
 
 def get_random_grid(n):
     # initialize a random sudoku
-    grid = [[0 for _ in range(n)] for _ in range(n)]
+    grid = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]
+    pairs = [(i, j) for i in range(n) for j in range(n)]
     t_list = [i for i in range(1, random.randint(1, n) + 1)]
     while len(t_list) > 0:
-        i = random.randint(0, n - 1)
-        j = random.randint(0, n - 1)
-        if grid[i][j] == 0:
-            t = random.choice(t_list)
-            grid[i][j] = t
-            t_list.remove(t)
+        i, j = random.choice(pairs)
+        pairs.remove((i, j))
+
+        index = random.randint(0, 1)
+
+        t = random.choice(t_list)
+        grid[index][i][j] = t
+        t_list.remove(t)
     return grid
