@@ -16,6 +16,23 @@ def get_filled_sudoku(k, grid):
 
 
 def generate_sudoku(k, grid):
+    n = k*k
+    solver = get_generator_solver(k, grid)
+
+    triplets = [(index, i, j) for i in range(n) for j in range(n) for index in range(2)]
+    
+    while len(triplets) > 0:
+        index, i, j = random.choice(triplets)
+        triplets.remove((index, i, j))
+
+        x = grid[index][i][j]
+        grid[index][i][j] = 0
+
+        if check_satisfiablity(k, grid, solver):
+            grid[index][i][j] = x
+    return grid
+
+def get_generator_solver(k, grid):
     cnf = get_pair_cnf(k, grid[0], grid[1])
     n = k * k
     lst = []
@@ -27,15 +44,4 @@ def generate_sudoku(k, grid):
 
     solver = Solver(use_timer=True)
     solver.append_formula(cnf.clauses)
-
-    triplets = [(index, i, j) for i in range(n) for j in range(n) for index in range(2)]
-    while len(triplets) > 0:
-        index, i, j = random.choice(triplets)
-        triplets.remove((index, i, j))
-
-        x = grid[index][i][j]
-        grid[index][i][j] = 0
-
-        if check_satisfiablity(k, grid, solver):
-            grid[index][i][j] = x
-    return grid
+    return solver
