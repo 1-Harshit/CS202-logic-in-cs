@@ -1,14 +1,15 @@
 # Normal Sudoku cnf
-from util.hash import hash_fn
 from pysat.formula import CNFPlus
 from pysat.card import CardEnc, EncType
 
+from util import hash_fn
 
+# Simple two sudoku cnf
 def sudoku_cnf(k):
     n = k * k
     cnf = CNFPlus()
 
-    # # add clauses for each cell has exactly one value
+    # add clauses for each cell has exactly one value
     for i in range(n):
         for j in range(n):
             lst1 = []
@@ -61,6 +62,7 @@ def sudoku_cnf(k):
     return cnf
 
 
+# cnf for pair sudoku
 def get_pair_cnf(k, sudoku1, sudoku2):
     n = k * k
     cnf = sudoku_cnf(k)

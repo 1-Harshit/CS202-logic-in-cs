@@ -1,19 +1,15 @@
-from pprint import pprint
+from util import get_generator_options, get_random_grid, pretty_print
+from solver import get_filled_sudoku, generate_sudoku
 
-from util import get_generator_options, get_random_grid
-from cnf import sudoku_cnf, get_pair_cnf
-from solver import get_filled_sudoku, check_satisfiablity, generate_sudoku
-import random
-
-
+# Driver code for sudoku pair generator
 def generator_main():
     k = get_generator_options()
     grid = get_random_grid(k * k)
     grid = get_filled_sudoku(k, grid)
-    pprint(grid)
+    # pretty_print(k, grid)
     x = generate_sudoku(k, grid)
 
-    pprint(x)
+    pretty_print(k, x)
 
 
 if __name__ == "__main__":

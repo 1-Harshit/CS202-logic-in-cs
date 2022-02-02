@@ -1,7 +1,8 @@
-from util.hash import rev_hash_fn
 import random
 
+from util import rev_hash_fn
 
+# the sat model to sudoku grid
 def sat_to_sudoku(k, solved):
     res = []
     n = k * k
@@ -11,13 +12,12 @@ def sat_to_sudoku(k, solved):
             if x > 0:
                 index, i, j, t = rev_hash_fn(k, x)
                 res[index][i][j] = t
-        # pprint(res[0])
-        # pprint(res[1])
     else:
         print("No Solution")
     return res
 
 
+# Generate a random code
 def get_random_grid(n):
     # initialize a random sudoku
     grid = [[[0 for _ in range(n)] for _ in range(n)] for _ in range(2)]

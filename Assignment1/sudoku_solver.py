@@ -1,5 +1,4 @@
-from pprint import pprint
-from util import get_solver_options, read_file, sat_to_sudoku
+from util import get_solver_options, read_file, sat_to_sudoku, pretty_print
 from solver import pair_solver
 
 """
@@ -17,7 +16,7 @@ def solver_main():
 
     res = sat_to_sudoku(k, solved)
 
-    pprint(res)
+    pretty_print(res)
 
     print("Time: ", time)
 

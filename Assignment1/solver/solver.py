@@ -1,10 +1,9 @@
-from pprint import pprint
-from cnf import sudoku_cnf, get_pair_cnf
-from util import hash_fn, sat_to_sudoku
 from pysat.solvers import Solver
-from pysat.card import EncType, CardEnc
 
+from cnf import get_pair_cnf
+from util import hash_fn
 
+# solve sudoku pair
 def pair_solver(k, sudoku1, sudoku2):
     cnf = get_pair_cnf(k, sudoku1, sudoku2)
     solve = Solver(use_timer=True)
@@ -12,6 +11,7 @@ def pair_solver(k, sudoku1, sudoku2):
     return sudoku_solver(k, sudoku1, sudoku2, solve)
 
 
+# solve given sudoku using the solver
 def sudoku_solver(k, sudoku1, sudoku2, solver):
     n = k * k
 
@@ -29,12 +29,12 @@ def sudoku_solver(k, sudoku1, sudoku2, solver):
                         assumptions.append(hash_fn(k, 1, i, j, t))
             if sudoku1[i][j] != 0 and sudoku2[i][j] != 0:
                 if sudoku1[i][j] == sudoku2[i][j]:
+                    print("Input Sudoku pair is not valid. Try again :)")
                     exit(1)
                 else:
                     assumptions.append(hash_fn(k, 0, i, j, sudoku1[i][j]))
                     assumptions.append(hash_fn(k, 1, i, j, sudoku2[i][j]))
-    # Solve the sudoku
 
+    # Solve the sudoku
     solver.solve(assumptions=assumptions)
-    
     return solver.get_model(), solver.time_accum()
