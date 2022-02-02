@@ -12,6 +12,10 @@ def generator_main():
     # Generate a filled sudoku
     grid = get_filled_sudoku(k, grid)
 
+    # # Uncomment to print the key
+    # # save the solved grid
+    # write_file(k, output_file_path+".key", grid)
+
     # generate a sudoku pair
     x = generate_sudoku(k, grid)
 
@@ -20,6 +24,7 @@ def generator_main():
 
     # print to a file
     write_file(k, output_file_path, x)
+    print("\nOuput written to: ./" + output_file_path)
 
 
 if __name__ == "__main__":

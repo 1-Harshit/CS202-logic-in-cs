@@ -45,7 +45,7 @@ def get_generator_solver(k, grid):
     n = k * k
     lst = []
 
-    # atleast one of the new grid should be diffrent from the original grid
+    # atleast one the element of the new grid should be diffrent from the original grid
     for index in range(2):
         for i in range(n):
             for j in range(n):

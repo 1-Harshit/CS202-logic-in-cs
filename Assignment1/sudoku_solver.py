@@ -19,14 +19,14 @@ def solver_main():
     res = sat_to_sudoku(k, solved)
 
     # pretty print the solved sudoku
-    pretty_print(res)
+    pretty_print(k, res)
 
     # print to a file
     write_file(k, output_file_path, res)
     print("Ouput written to: ./" + output_file_path)
 
     # print the time taken
-    print("Time: ", time)
+    print("Time: {} seconds".format(time))
 
 
 if __name__ == "__main__":

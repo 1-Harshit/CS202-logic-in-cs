@@ -29,7 +29,7 @@ def sudoku_solver(k, sudoku1, sudoku2, solver):
                         assumptions.append(hash_fn(k, 1, i, j, t))
             if sudoku1[i][j] != 0 and sudoku2[i][j] != 0:
                 if sudoku1[i][j] == sudoku2[i][j]:
-                    print("Input Sudoku pair is not valid. Try again :)")
+                    print("This set of sudokus cannot form a sudoku pair. Try again :)")
                     exit(1)
                 else:
                     assumptions.append(hash_fn(k, 0, i, j, sudoku1[i][j]))

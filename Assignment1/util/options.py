@@ -27,7 +27,7 @@ def get_generator_options():
 def get_solver_options():
     output_file_path = "solver_output.csv"
     options = sys.argv
-    if len(options) < 4:
+    if len(options) < 3:
         print("Usage: python3 soduku_sat.py <k> <input_file_path> [<output_file_path>]")
         exit(1)
     try:
