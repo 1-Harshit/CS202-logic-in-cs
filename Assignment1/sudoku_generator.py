@@ -1,15 +1,25 @@
-from util import get_generator_options, get_random_grid, pretty_print
+from util import get_generator_options, get_random_grid, pretty_print, write_file
 from solver import get_filled_sudoku, generate_sudoku
 
 # Driver code for sudoku pair generator
 def generator_main():
-    k = get_generator_options()
+    # Get the options
+    k, output_file_path = get_generator_options()
+
+    # Generate a random grid
     grid = get_random_grid(k * k)
+
+    # Generate a filled sudoku
     grid = get_filled_sudoku(k, grid)
-    # pretty_print(k, grid)
+
+    # generate a sudoku pair
     x = generate_sudoku(k, grid)
 
+    # pretty print the sudoku pair
     pretty_print(k, x)
+
+    # print to a file
+    write_file(k, output_file_path, x)
 
 
 if __name__ == "__main__":

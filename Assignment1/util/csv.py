@@ -8,6 +8,7 @@ def read_file(k, filepath):
         grid = [list(map(int, row)) for row in grid]
         return grid[: k * k], grid[k * k :]
 
+
 # Write grid to csv file
 def write_file(k, filepath, grid):
     with open(filepath, "w") as f:
