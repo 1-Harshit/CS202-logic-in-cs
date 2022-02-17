@@ -9,4 +9,14 @@ function DPLL(Φ)
    for every literal l that occurs pure in Φ  
       Φ ← pure-literal-assign(l, Φ);  
    l ← choose-literal(Φ);  
-   return DPLL(ΦΛl) or DPLL(ΦΛnot(l));  ```
+   return DPLL(ΦΛl) or DPLL(ΦΛnot(l)); 
+```
+
+```
+      1∨2,  2∨~3∨4,   ~1∨~2,  ~1∨~3∨~4,   1
+1           2 ~3 4     ~2      ~3 ~4       
+1,-2        -3 4               -3 -4
+1,-2,3      4                  -4
+1 -2 3 4                        0
+
+```
