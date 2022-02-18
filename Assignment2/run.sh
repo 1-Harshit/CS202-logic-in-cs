@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+# Example usage: ``./run.sh testcases/uf20-01.cnf`
+
 # read a filename
 filename=$1
 
