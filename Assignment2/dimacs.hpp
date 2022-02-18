@@ -82,16 +82,23 @@ public:
 				set_count(line);
 				continue;
 			}
-			set<int> clause;
-			stringstream ss(line);
-			int literal;
-			while (ss >> literal)
-				if (literal != 0)
-				{
-					literal_map[literal]++;
-					clause.insert(literal);
-				}
-			clauses.insert(clause);
+			try {
+				set<int> clause;
+				stringstream ss(line);
+				int literal;
+				while (ss >> literal)
+					if (literal != 0)
+					{
+						literal_map[literal]++;
+						clause.insert(literal);
+					}
+				clauses.insert(clause);
+			}
+			catch (...)
+			{
+				throw "Error in reading the file";
+			}
+			
 		}
 		file.close();
 
