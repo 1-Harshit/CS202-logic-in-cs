@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	dpll solver(d);
 	bool sat = solver.solve();
 
-	cout << (sat ? "SAT" : "UNSAF") << endl;
+	cout << (sat ? "SAT" : "UNSAT") << endl;
 	if (sat)
 	{
 		for (auto x : solver.get_model())
